@@ -1,0 +1,35 @@
+appId: app.rork.emberarena.desktop
+productName: Ember Arena
+copyright: Copyright © Ember Arena
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - package.json
+  - build/icon.ico
+  - "!**/*.map"
+asar: true
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+  artifactName: EmberArena-Setup-${version}-x64.${ext}
+  # Code signing is not configured; Windows SmartScreen will warn on first run until the installer is signed.
+  signAndEditExecutable: true
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Ember Arena
+  uninstallDisplayName: Ember Arena
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  deleteAppDataOnUninstall: false
+publish: null
