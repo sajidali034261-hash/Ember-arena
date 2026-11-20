@@ -1,12 +1,13 @@
 name: Build Windows desktop app
 
-# Manual only: builds the Ember Arena Windows x64 NSIS installer from desktop/ and
-# uploads it as a workflow artifact. It never publishes a GitHub release and uses no secrets.
+# Manual only: builds the Ember Arena Windows x64 NSIS installer from desktop/, publishes
+# it as a GitHub release asset (tag windows-v<version>) and uploads a workflow artifact.
+# Uses no secrets beyond the built-in GITHUB_TOKEN.
 on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: build-windows-${{ github.ref }}
@@ -46,6 +47,23 @@ jobs:
 
       - name: Type-check, build and package
         run: bun run dist:win
+
+      - name: Publish GitHub release
+        shell: bash
+        working-directory: desktop
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="windows-v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release/*.exe release/*.exe.blockmap --clobber
+          else
+            gh release create "$TAG" release/*.exe release/*.exe.blockmap \
+              --title "Ember Arena for Windows $VERSION" \
+              --notes "Windows 10/11 x64 installer. Unsigned build - SmartScreen may warn on first run (More info > Run anyway). Uses the same accounts and backend as the Android app."
+          fi
+          echo "Published release $TAG"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
